@@ -86,8 +86,11 @@ sudo $(which config-pin) -f - <<- EOF
 	P8.15	low	# Y Step
 	P8.16	high	# eMMC Enable
 	P8.17	in	# ESTOP
-	P8.18	low	# Z Dir
-	P8.19	low	# Z Step
+	P8.18	low	# Z1 Dir
+	P8.19	low	# Z1 Step
+	P9.17	low	# Z2 Step
+	P9.18	low	# Z2 Dir
+
 
 # eMMC signals, uncomment *ONLY* if you have disabled the on-board eMMC!
 # MachineKit images disable eMMC and HDMI audio by default in uEnv.txt:
@@ -105,8 +108,6 @@ sudo $(which config-pin) -f - <<- EOF
 	P9.14	high	# Axis Enable, active low
 	P9.15	low	# FET 2 : E0
 	P9.16	low	# E0 Step
-	P9.17	low	# E1 Step
-	P9.18	low	# E1 Dir
 #	P9.19	low	# I2C SCL
 #	P9.20	low	# I2C SDA
 	P9.21	low	# FET 4 : E1
@@ -116,10 +117,10 @@ sudo $(which config-pin) -f - <<- EOF
 	P9.25	low	# LED
 	P9.26	low	# E2 Dir
 	P9.27	low	# FET 3 : E2
-	P9.28	low	# SPI CS0
-	P9.29	low	# SPI MISO
-	P9.30	low	# SPI MOSI
-	P9.31	low	# SPI SCLK
+	P9.28	spi	# SPI CS0
+	P9.29	spi	# SPI MISO
+	P9.30	spi	# SPI MOSI
+	P9.31	spi	# SPI SCLK
 
 	P9.41	low	# FET 5
 	P9.91	in	# Reserved, connected to P9.41
