@@ -2,11 +2,6 @@
 This configuration drives a standard 4-axis 3D printer using the PRU for
 high speed step/dir pulse generation and a CRAMPS driver board.
 
-There are currently no limit switches configured, so adjust the MIN_LIMIT
-and MAX_LIMIT axis settings in the ini file if your printer has less than
-200 mm of X/Y travel.  If you have limit switches, uncomment the marked
-lines in the HAL file to enable them.
-
 Current X and Y settings are appropriate for a typical "MendelMax" style
 printer, with the following settings:
 
