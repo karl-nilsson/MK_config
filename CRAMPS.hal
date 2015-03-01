@@ -34,11 +34,14 @@ loadrt limit1 count=2
 # c = analog input channel and thermistor table
 loadusr -Wn Therm hal_temp_bbb -n Therm -c 04:epcos_B57560G1104,05:epcos_B57560G1104
 
+# read SPI TC Amp device MAX31855 @ /dev/spidev2.0
+loadusr -Wn TC hal_temp_tc -n TC -d 2.0:MAX31855
+
 # ################################################
 # THREADS
 # ################################################
 
-addf hpg.capture-position   servo-thread
+addf hpg.capture-position                 servo-thread
 addf bb_gpio.read                         servo-thread
 addf motion-command-handler               servo-thread
 addf motion-controller                    servo-thread
@@ -50,7 +53,6 @@ addf hpg.update                           servo-thread
 addf bb_gpio.write                        servo-thread
 addf gantry.z.read                        servo-thread
 addf gantry.z.write                       servo-thread
-       
 
 # ######################################################
 # Axis-of-motion Specific Configs (not the GUI)
@@ -65,7 +67,7 @@ addf gantry.z.write                       servo-thread
 newsig emcmot.00.enable bit
 sets emcmot.00.enable FALSE
 
-net emcmot.00.enable <= axis.0.amp-enable-out 
+net emcmot.00.enable <= axis.0.amp-enable-out
 net emcmot.00.enable => hpg.stepgen.00.enable
 
 
@@ -394,10 +396,10 @@ setp hpg.pwmgen.00.out.05.enable    1
 setp hpg.pwmgen.00.out.05.value     0.0
 
 # PID for Extruder 0 temperature control
-net e0.temp.meas    <= Therm.ch-04.value
+net e0.temp.meas    <= TC.ch-2:0.value
 net e0.temp.meas    => pid.0.feedback
 
-sets e0.temp.set  0
+sets e0.temp.set    0
 net e0.temp.set     => pid.0.command
 
 net e0.heater  <= pid.0.output
