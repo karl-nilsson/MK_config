@@ -35,10 +35,10 @@ loadrt limit1 count=2
 
 # Python user-mode HAL module to read ADC value and generate a thermostat output for PWM
 # c = analog input channel and thermistor table
-loadusr -Wn Therm hal_temp_bbb -n Therm -c 04:epcos_B57560G1104,05:epcos_B57560G1104
+loadusr -Wn Therm hal_temp_bbb -n Therm -c 04:semitec_104GT_2,05:epcos_B57560G1104 -b CRAMPS
 
 # read SPI TC Amp device MAX31855 @ /dev/spidev2.0
-loadusr -Wn TC hal_temp_tc -n TC -d 2.0:MAX31855
+# loadusr -Wn TC hal_temp_tc -n TC -d 2.0:MAX31855
 
 # ################################################
 # THREADS
@@ -304,10 +304,8 @@ net limit-y-min  => axis.1.neg-lim-sw-in
 #net limit-z-min  => axis.2.neg-lim-sw-in
 #net limit-z-max => axis.2.pos-lim-sw-in
 
-# use the same limit switch to home both Z joints (for now)
 net limit-z-min => gantry.z.joint.00.home
-net limit-z-min => gantry.z.joint.01.home
-#net limit-z-max => gantry.z.joint.01.home
+net limit-z-max => gantry.z.joint.01.home
 
 net home-z      <= gantry.z.home
 net home-z      => axis.2.home-sw-in
@@ -399,7 +397,7 @@ setp hpg.pwmgen.00.out.05.enable    1
 setp hpg.pwmgen.00.out.05.value     0.0
 
 # PID for Extruder 0 temperature control
-net e0.temp.meas    <= TC.ch-2:0.value
+net e0.temp.meas    <= Therm.ch-04.value #TC.ch-2:0.value
 net e0.temp.meas    => pid.0.feedback
 
 sets e0.temp.set    0
