@@ -88,8 +88,6 @@ sudo $(which config-pin) -f - <<- EOF
 	P8.17	in	# ESTOP
 	P8.18	low	# Z1 Dir
 	P8.19	low	# Z1 Step
-	P9.17	low	# Z2 Step
-	P9.18	low	# Z2 Dir
 
 
 # eMMC signals, uncomment *ONLY* if you have disabled the on-board eMMC!
@@ -108,6 +106,8 @@ sudo $(which config-pin) -f - <<- EOF
 	P9.14	high	# Axis Enable, active low
 	P9.15	low	# FET 2 : E0
 	P9.16	low	# E0 Step
+	P9.17	low	# E1 Step
+	P9.18	low	# E1 Dir
 #	P9.19	low	# I2C SCL
 #	P9.20	low	# I2C SDA
 	P9.21	low	# FET 4 : E1

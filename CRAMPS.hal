@@ -9,6 +9,8 @@
 # Launch the setup script to make sure hardware setup looks good
 loadusr -w ./setup.sh
 
+# load haltalk
+# loadusr -w haltalk
 
 # ###################################
 # Core EMC/HAL Loads
@@ -23,13 +25,10 @@ loadrt tp
 # motion controller, get name and thread periods from ini file
 loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES tp=tp kins=trivkins
 
-# gantry
-loadrt gantry names=gantry.z personality=2
-
 # load low-level drivers
 loadrt hal_bb_gpio output_pins=816,822,823,824,825,826,914,923,925 input_pins=807,808,809,810,817,911,913
 loadrt [PRUCONF](DRIVER) prucode=$(HAL_RTMOD_DIR)/[PRUCONF](PRUBIN) [PRUCONF](CONFIG) halname=hpg
-loadrt pid num_chan=2
+loadrt pid count=2
 loadrt limit1 count=2
 
 
@@ -54,8 +53,6 @@ addf limit1.0                             servo-thread
 addf limit1.1                             servo-thread
 addf hpg.update                           servo-thread
 addf bb_gpio.write                        servo-thread
-addf gantry.z.read                        servo-thread
-addf gantry.z.write                       servo-thread
 
 # ######################################################
 # Axis-of-motion Specific Configs (not the GUI)
@@ -140,24 +137,24 @@ setp hpg.stepgen.01.steppin        815
 setp hpg.stepgen.01.dirpin         814
 
 
-##################
-# Z Axis - Gantry
-##################
-net z1pos-cmd gantry.z.joint.00.pos-cmd => hpg.stepgen.02.position-cmd
-net z1pos-fb  gantry.z.joint.00.pos-fb  => hpg.stepgen.02.position-fb
-net z2pos-cmd gantry.z.joint.01.pos-cmd => hpg.stepgen.04.position-cmd
-net z2pos-fb  gantry.z.joint.01.pos-fb  => hpg.stepgen.04.position-fb
-
-net zpos-cmd  gantry.z.position-cmd     <= axis.2.motor-pos-cmd
-net zpos-fb   gantry.z.position-fb      => axis.2.motor-pos-fb
-
-net zenable   axis.2.amp-enable-out     => hpg.stepgen.02.enable hpg.stepgen.04.enable
-
-setp gantry.z.search-vel [AXIS_2]HOME_SEARCH_VEL
-
 # ################
-# Z [2] Axis - Gantry: Left
+# Z [2] Axis
 # ################
+
+# axis enable chain
+newsig emcmot.02.enable bit
+sets   emcmot.02.enable FALSE
+
+net emcmot.02.enable  <= axis.2.amp-enable-out
+net emcmot.02.enable  => hpg.stepgen.02.enable
+
+# position command and feedback
+net emcmot.02.pos-cmd <= axis.2.motor-pos-cmd
+net emcmot.02.pos-cmd => hpg.stepgen.02.position-cmd
+
+net motor.02.pos-fb   <= hpg.stepgen.02.position-fb
+net motor.02.pos-fb   => axis.2.motor-pos-fb
+
 
 # timing parameters
 setp hpg.stepgen.02.dirsetup        [AXIS_2]DIRSETUP
@@ -177,27 +174,6 @@ setp hpg.stepgen.02.steppin        819
 # P8.29 PRU1.out9
 setp hpg.stepgen.02.dirpin         818
 
-# ################
-# Z [4] Axis - Gantry: Right
-# ################
-
-# timing parameters
-setp hpg.stepgen.04.dirsetup        [AXIS_2]DIRSETUP
-setp hpg.stepgen.04.dirhold         [AXIS_2]DIRHOLD
-
-setp hpg.stepgen.04.steplen         [AXIS_2]STEPLEN
-setp hpg.stepgen.04.stepspace       [AXIS_2]STEPSPACE
-
-setp hpg.stepgen.04.position-scale  [AXIS_2]SCALE
-
-setp hpg.stepgen.04.maxvel          [AXIS_2]STEPGEN_MAX_VEL
-setp hpg.stepgen.04.maxaccel        [AXIS_2]STEPGEN_MAX_ACC
-
-# P9.17
-setp hpg.stepgen.04.steppin         917
-# P9.18
-setp hpg.stepgen.04.dirpin          918
-
 
 # ################
 # A [3] Axis (Extruder)
@@ -207,7 +183,7 @@ setp hpg.stepgen.04.dirpin          918
 newsig emcmot.03.enable bit
 sets emcmot.03.enable FALSE
 
-net emcmot.03.enable <= axis.3.amp-enable-out 
+net emcmot.03.enable <= axis.3.amp-enable-out
 net emcmot.03.enable => hpg.stepgen.03.enable
 
 
@@ -300,17 +276,9 @@ net limit-x-min  => axis.0.neg-lim-sw-in
 net limit-y-min  => axis.1.home-sw-in
 net limit-y-min  => axis.1.neg-lim-sw-in
 #net limit-y-max => axis.1.pos-lim-sw-in
-#net limit-z-min  => axis.2.home-sw-in
-#net limit-z-min  => axis.2.neg-lim-sw-in
+net limit-z-min  => axis.2.home-sw-in
+net limit-z-min  => axis.2.neg-lim-sw-in
 #net limit-z-max => axis.2.pos-lim-sw-in
-
-net limit-z-min => gantry.z.joint.00.home
-net limit-z-max => gantry.z.joint.01.home
-
-net home-z      <= gantry.z.home
-net home-z      => axis.2.home-sw-in
-net limit-z     <= gantry.z.limit
-net limit-z     => axis.2.neg-lim-sw-in
 
 # ################
 # Servo signals
@@ -401,7 +369,7 @@ net e0.temp.meas    <= Therm.ch-04.value #TC.ch-2:0.value
 net e0.temp.meas    => pid.0.feedback
 
 sets e0.temp.set    0
-net e0.temp.set     => pid.0.command
+net  e0.temp.set     => pid.0.command
 
 net e0.heater  <= pid.0.output
 net e0.heater  => limit1.0.in
